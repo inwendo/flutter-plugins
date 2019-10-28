@@ -330,7 +330,20 @@
 }
 
 - (bool)loadUrl:(NSString*)url withHeaders:(NSDictionary<NSString*, NSString*>*)headers {
-  NSURL* nsUrl = [NSURL URLWithString:url];
+  NSURL* nsUrl = [NSURL fileURLWithPath:url];
+  if ([url.lowercaseString hasPrefix:@"file://"]) {
+    url = [url substringFromIndex:7]; // length of 'file://'
+
+    NSURL *nsUrl = [NSURL fileURLWithPath:url];
+    NSURL *readAccessToURL = [[nsUrl URLByDeletingLastPathComponent] URLByDeletingLastPathComponent];
+    NSLog(@"\nOpening as file \(nsUrl)");
+
+    [_webView loadFileURL:nsUrl allowingReadAccessToURL:readAccessToURL];
+    return true;
+  } 
+
+  NSLog(@"\nOpening as URL \(nsUrl)");
+  nsUrl = [NSURL URLWithString:url];
   if (!nsUrl) {
     return false;
   }
